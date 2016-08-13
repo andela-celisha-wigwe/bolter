@@ -50,11 +50,13 @@ var VideosContainer = React.createClass({
 	},
 
 	componentWillMount() {
+		this.props.getVideos()
 		const { videos } = this.props
-		this.setState({
-			videos: videos,
-			loading: false
-		})
+		// console.log(videos)
+		// this.setState({
+		// 	videos: videos,
+		// 	loading: false
+		// })
 	},
 
 	showDetails(id) {
@@ -83,6 +85,13 @@ var VideosContainer = React.createClass({
 		})
 	},
 
+	handleSearch(e) {
+		e.preventDefault();
+		const query = this.refs.search.value
+		this.props.searchVideo(query)
+		this.refs.searchForm.reset();
+	},
+
 	render() {
 
 		const videos = this.state.loading
@@ -103,6 +112,10 @@ var VideosContainer = React.createClass({
 			<div>
 				<h1><Link to="/">Vistagram</Link></h1>
 				{ play }
+					<form ref="searchForm" onSubmit={this.handleSearch} className="comment-form">
+						<input type="search" ref="search" placeholder="search" />
+						<input type="submit" hidden />
+					</form>
 				<div className="photo-grid">{videos}</div>
 			</div>
 		)

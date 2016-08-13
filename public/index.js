@@ -65,7 +65,7 @@
 
 	var _routes2 = _interopRequireDefault(_routes);
 
-	var _style = __webpack_require__(296);
+	var _style = __webpack_require__(303);
 
 	var _style2 = _interopRequireDefault(_style);
 
@@ -21497,11 +21497,11 @@
 
 	var _App2 = _interopRequireDefault(_App);
 
-	var _VideosContainer = __webpack_require__(264);
+	var _VideosContainer = __webpack_require__(271);
 
 	var _VideosContainer2 = _interopRequireDefault(_VideosContainer);
 
-	var _store = __webpack_require__(288);
+	var _store = __webpack_require__(295);
 
 	var _store2 = _interopRequireDefault(_store);
 
@@ -27170,8 +27170,11 @@
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 	function mapStateToProps(state) {
+		// console.log(state)
 		return {
-			videos: state.videos
+			videos: state.videos,
+			posts: state.posts,
+			comments: state.comments
 		};
 	}
 
@@ -28634,17 +28637,26 @@
 
 /***/ },
 /* 262 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
 	exports.increment = increment;
+	exports.getVideos = getVideos;
 	exports.requestForVideos = requestForVideos;
+	exports.searchVideo = searchVideo;
 	exports.show = show;
 	exports.hide = hide;
+
+	var _axios = __webpack_require__(272);
+
+	var _axios2 = _interopRequireDefault(_axios);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	// increment
 	function increment(index) {
 		return {
@@ -28653,9 +28665,39 @@
 		};
 	}
 
+	function getVideos() {
+		return function (dispatch) {
+
+			dispatch({ type: "GET_VIDEOS_PENDING" });
+
+			var searchEndpoint = 'http://localhost:8888/api/v1/videos';
+
+			_axios2.default.get(searchEndpoint).then(function (data) {
+				var data = data.data;
+
+				dispatch({
+					type: 'GET_VIDEOS_DONE',
+					data: data
+				});
+			}).catch(function (err) {
+				console.log("THERE WAS A PROBELM GETTING THE VIDEOS", err);
+				dispatch({
+					type: "GET_VIDEOS_FAILED"
+				});
+			});
+		};
+	}
+
 	function requestForVideos() {
 		return {
 			type: 'REQUEST_FOR_VIDEOS'
+		};
+	}
+
+	function searchVideo(query) {
+		return {
+			type: 'SEARCH_VIDEOS',
+			query: query
 		};
 	}
 
@@ -28679,15 +28721,23 @@
 
 	'use strict';
 
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
 	var _reactRouter = __webpack_require__(177);
+
+	var _reactAddonsCssTransitionGroup = __webpack_require__(264);
+
+	var _reactAddonsCssTransitionGroup2 = _interopRequireDefault(_reactAddonsCssTransitionGroup);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var React = __webpack_require__(2);
 
 
 	var Main = React.createClass({
 		displayName: 'Main',
-
-
 		render: function render() {
 			return React.createElement(
 				'div',
@@ -28695,13 +28745,848 @@
 				React.cloneElement(this.props.children, this.props)
 			);
 		}
-
 	});
 
-	module.exports = Main;
+	exports.default = Main;
 
 /***/ },
 /* 264 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(265);
+
+/***/ },
+/* 265 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactCSSTransitionGroup
+	 */
+
+	'use strict';
+
+	var _assign = __webpack_require__(5);
+
+	var React = __webpack_require__(3);
+
+	var ReactTransitionGroup = __webpack_require__(266);
+	var ReactCSSTransitionGroupChild = __webpack_require__(268);
+
+	function createTransitionTimeoutPropValidator(transitionType) {
+	  var timeoutPropName = 'transition' + transitionType + 'Timeout';
+	  var enabledPropName = 'transition' + transitionType;
+
+	  return function (props) {
+	    // If the transition is enabled
+	    if (props[enabledPropName]) {
+	      // If no timeout duration is provided
+	      if (props[timeoutPropName] == null) {
+	        return new Error(timeoutPropName + ' wasn\'t supplied to ReactCSSTransitionGroup: ' + 'this can cause unreliable animations and won\'t be supported in ' + 'a future version of React. See ' + 'https://fb.me/react-animation-transition-group-timeout for more ' + 'information.');
+
+	        // If the duration isn't a number
+	      } else if (typeof props[timeoutPropName] !== 'number') {
+	          return new Error(timeoutPropName + ' must be a number (in milliseconds)');
+	        }
+	    }
+	  };
+	}
+
+	/**
+	 * An easy way to perform CSS transitions and animations when a React component
+	 * enters or leaves the DOM.
+	 * See https://facebook.github.io/react/docs/animation.html#high-level-api-reactcsstransitiongroup
+	 */
+	var ReactCSSTransitionGroup = React.createClass({
+	  displayName: 'ReactCSSTransitionGroup',
+
+	  propTypes: {
+	    transitionName: ReactCSSTransitionGroupChild.propTypes.name,
+
+	    transitionAppear: React.PropTypes.bool,
+	    transitionEnter: React.PropTypes.bool,
+	    transitionLeave: React.PropTypes.bool,
+	    transitionAppearTimeout: createTransitionTimeoutPropValidator('Appear'),
+	    transitionEnterTimeout: createTransitionTimeoutPropValidator('Enter'),
+	    transitionLeaveTimeout: createTransitionTimeoutPropValidator('Leave')
+	  },
+
+	  getDefaultProps: function () {
+	    return {
+	      transitionAppear: false,
+	      transitionEnter: true,
+	      transitionLeave: true
+	    };
+	  },
+
+	  _wrapChild: function (child) {
+	    // We need to provide this childFactory so that
+	    // ReactCSSTransitionGroupChild can receive updates to name, enter, and
+	    // leave while it is leaving.
+	    return React.createElement(ReactCSSTransitionGroupChild, {
+	      name: this.props.transitionName,
+	      appear: this.props.transitionAppear,
+	      enter: this.props.transitionEnter,
+	      leave: this.props.transitionLeave,
+	      appearTimeout: this.props.transitionAppearTimeout,
+	      enterTimeout: this.props.transitionEnterTimeout,
+	      leaveTimeout: this.props.transitionLeaveTimeout
+	    }, child);
+	  },
+
+	  render: function () {
+	    return React.createElement(ReactTransitionGroup, _assign({}, this.props, { childFactory: this._wrapChild }));
+	  }
+	});
+
+	module.exports = ReactCSSTransitionGroup;
+
+/***/ },
+/* 266 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactTransitionGroup
+	 */
+
+	'use strict';
+
+	var _assign = __webpack_require__(5);
+
+	var React = __webpack_require__(3);
+	var ReactInstanceMap = __webpack_require__(125);
+	var ReactTransitionChildMapping = __webpack_require__(267);
+
+	var emptyFunction = __webpack_require__(13);
+
+	/**
+	 * A basis for animations. When children are declaratively added or removed,
+	 * special lifecycle hooks are called.
+	 * See https://facebook.github.io/react/docs/animation.html#low-level-api-reacttransitiongroup
+	 */
+	var ReactTransitionGroup = React.createClass({
+	  displayName: 'ReactTransitionGroup',
+
+	  propTypes: {
+	    component: React.PropTypes.any,
+	    childFactory: React.PropTypes.func
+	  },
+
+	  getDefaultProps: function () {
+	    return {
+	      component: 'span',
+	      childFactory: emptyFunction.thatReturnsArgument
+	    };
+	  },
+
+	  getInitialState: function () {
+	    return {
+	      // TODO: can we get useful debug information to show at this point?
+	      children: ReactTransitionChildMapping.getChildMapping(this.props.children)
+	    };
+	  },
+
+	  componentWillMount: function () {
+	    this.currentlyTransitioningKeys = {};
+	    this.keysToEnter = [];
+	    this.keysToLeave = [];
+	  },
+
+	  componentDidMount: function () {
+	    var initialChildMapping = this.state.children;
+	    for (var key in initialChildMapping) {
+	      if (initialChildMapping[key]) {
+	        this.performAppear(key);
+	      }
+	    }
+	  },
+
+	  componentWillReceiveProps: function (nextProps) {
+	    var nextChildMapping;
+	    if (process.env.NODE_ENV !== 'production') {
+	      nextChildMapping = ReactTransitionChildMapping.getChildMapping(nextProps.children, ReactInstanceMap.get(this)._debugID);
+	    } else {
+	      nextChildMapping = ReactTransitionChildMapping.getChildMapping(nextProps.children);
+	    }
+	    var prevChildMapping = this.state.children;
+
+	    this.setState({
+	      children: ReactTransitionChildMapping.mergeChildMappings(prevChildMapping, nextChildMapping)
+	    });
+
+	    var key;
+
+	    for (key in nextChildMapping) {
+	      var hasPrev = prevChildMapping && prevChildMapping.hasOwnProperty(key);
+	      if (nextChildMapping[key] && !hasPrev && !this.currentlyTransitioningKeys[key]) {
+	        this.keysToEnter.push(key);
+	      }
+	    }
+
+	    for (key in prevChildMapping) {
+	      var hasNext = nextChildMapping && nextChildMapping.hasOwnProperty(key);
+	      if (prevChildMapping[key] && !hasNext && !this.currentlyTransitioningKeys[key]) {
+	        this.keysToLeave.push(key);
+	      }
+	    }
+
+	    // If we want to someday check for reordering, we could do it here.
+	  },
+
+	  componentDidUpdate: function () {
+	    var keysToEnter = this.keysToEnter;
+	    this.keysToEnter = [];
+	    keysToEnter.forEach(this.performEnter);
+
+	    var keysToLeave = this.keysToLeave;
+	    this.keysToLeave = [];
+	    keysToLeave.forEach(this.performLeave);
+	  },
+
+	  performAppear: function (key) {
+	    this.currentlyTransitioningKeys[key] = true;
+
+	    var component = this.refs[key];
+
+	    if (component.componentWillAppear) {
+	      component.componentWillAppear(this._handleDoneAppearing.bind(this, key));
+	    } else {
+	      this._handleDoneAppearing(key);
+	    }
+	  },
+
+	  _handleDoneAppearing: function (key) {
+	    var component = this.refs[key];
+	    if (component.componentDidAppear) {
+	      component.componentDidAppear();
+	    }
+
+	    delete this.currentlyTransitioningKeys[key];
+
+	    var currentChildMapping;
+	    if (process.env.NODE_ENV !== 'production') {
+	      currentChildMapping = ReactTransitionChildMapping.getChildMapping(this.props.children, ReactInstanceMap.get(this)._debugID);
+	    } else {
+	      currentChildMapping = ReactTransitionChildMapping.getChildMapping(this.props.children);
+	    }
+
+	    if (!currentChildMapping || !currentChildMapping.hasOwnProperty(key)) {
+	      // This was removed before it had fully appeared. Remove it.
+	      this.performLeave(key);
+	    }
+	  },
+
+	  performEnter: function (key) {
+	    this.currentlyTransitioningKeys[key] = true;
+
+	    var component = this.refs[key];
+
+	    if (component.componentWillEnter) {
+	      component.componentWillEnter(this._handleDoneEntering.bind(this, key));
+	    } else {
+	      this._handleDoneEntering(key);
+	    }
+	  },
+
+	  _handleDoneEntering: function (key) {
+	    var component = this.refs[key];
+	    if (component.componentDidEnter) {
+	      component.componentDidEnter();
+	    }
+
+	    delete this.currentlyTransitioningKeys[key];
+
+	    var currentChildMapping;
+	    if (process.env.NODE_ENV !== 'production') {
+	      currentChildMapping = ReactTransitionChildMapping.getChildMapping(this.props.children, ReactInstanceMap.get(this)._debugID);
+	    } else {
+	      currentChildMapping = ReactTransitionChildMapping.getChildMapping(this.props.children);
+	    }
+
+	    if (!currentChildMapping || !currentChildMapping.hasOwnProperty(key)) {
+	      // This was removed before it had fully entered. Remove it.
+	      this.performLeave(key);
+	    }
+	  },
+
+	  performLeave: function (key) {
+	    this.currentlyTransitioningKeys[key] = true;
+
+	    var component = this.refs[key];
+	    if (component.componentWillLeave) {
+	      component.componentWillLeave(this._handleDoneLeaving.bind(this, key));
+	    } else {
+	      // Note that this is somewhat dangerous b/c it calls setState()
+	      // again, effectively mutating the component before all the work
+	      // is done.
+	      this._handleDoneLeaving(key);
+	    }
+	  },
+
+	  _handleDoneLeaving: function (key) {
+	    var component = this.refs[key];
+
+	    if (component.componentDidLeave) {
+	      component.componentDidLeave();
+	    }
+
+	    delete this.currentlyTransitioningKeys[key];
+
+	    var currentChildMapping;
+	    if (process.env.NODE_ENV !== 'production') {
+	      currentChildMapping = ReactTransitionChildMapping.getChildMapping(this.props.children, ReactInstanceMap.get(this)._debugID);
+	    } else {
+	      currentChildMapping = ReactTransitionChildMapping.getChildMapping(this.props.children);
+	    }
+
+	    if (currentChildMapping && currentChildMapping.hasOwnProperty(key)) {
+	      // This entered again before it fully left. Add it again.
+	      this.performEnter(key);
+	    } else {
+	      this.setState(function (state) {
+	        var newChildren = _assign({}, state.children);
+	        delete newChildren[key];
+	        return { children: newChildren };
+	      });
+	    }
+	  },
+
+	  render: function () {
+	    // TODO: we could get rid of the need for the wrapper node
+	    // by cloning a single child
+	    var childrenToRender = [];
+	    for (var key in this.state.children) {
+	      var child = this.state.children[key];
+	      if (child) {
+	        // You may need to apply reactive updates to a child as it is leaving.
+	        // The normal React way to do it won't work since the child will have
+	        // already been removed. In case you need this behavior you can provide
+	        // a childFactory function to wrap every child, even the ones that are
+	        // leaving.
+	        childrenToRender.push(React.cloneElement(this.props.childFactory(child), { ref: key, key: key }));
+	      }
+	    }
+
+	    // Do not forward ReactTransitionGroup props to primitive DOM nodes
+	    var props = _assign({}, this.props);
+	    delete props.transitionLeave;
+	    delete props.transitionName;
+	    delete props.transitionAppear;
+	    delete props.transitionEnter;
+	    delete props.childFactory;
+	    delete props.transitionLeaveTimeout;
+	    delete props.transitionEnterTimeout;
+	    delete props.transitionAppearTimeout;
+	    delete props.component;
+
+	    return React.createElement(this.props.component, props, childrenToRender);
+	  }
+	});
+
+	module.exports = ReactTransitionGroup;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+
+/***/ },
+/* 267 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactTransitionChildMapping
+	 */
+
+	'use strict';
+
+	var flattenChildren = __webpack_require__(134);
+
+	var ReactTransitionChildMapping = {
+	  /**
+	   * Given `this.props.children`, return an object mapping key to child. Just
+	   * simple syntactic sugar around flattenChildren().
+	   *
+	   * @param {*} children `this.props.children`
+	   * @param {number=} selfDebugID Optional debugID of the current internal instance.
+	   * @return {object} Mapping of key to child
+	   */
+	  getChildMapping: function (children, selfDebugID) {
+	    if (!children) {
+	      return children;
+	    }
+
+	    if (process.env.NODE_ENV !== 'production') {
+	      return flattenChildren(children, selfDebugID);
+	    }
+
+	    return flattenChildren(children);
+	  },
+
+	  /**
+	   * When you're adding or removing children some may be added or removed in the
+	   * same render pass. We want to show *both* since we want to simultaneously
+	   * animate elements in and out. This function takes a previous set of keys
+	   * and a new set of keys and merges them with its best guess of the correct
+	   * ordering. In the future we may expose some of the utilities in
+	   * ReactMultiChild to make this easy, but for now React itself does not
+	   * directly have this concept of the union of prevChildren and nextChildren
+	   * so we implement it here.
+	   *
+	   * @param {object} prev prev children as returned from
+	   * `ReactTransitionChildMapping.getChildMapping()`.
+	   * @param {object} next next children as returned from
+	   * `ReactTransitionChildMapping.getChildMapping()`.
+	   * @return {object} a key set that contains all keys in `prev` and all keys
+	   * in `next` in a reasonable order.
+	   */
+	  mergeChildMappings: function (prev, next) {
+	    prev = prev || {};
+	    next = next || {};
+
+	    function getValueForKey(key) {
+	      if (next.hasOwnProperty(key)) {
+	        return next[key];
+	      } else {
+	        return prev[key];
+	      }
+	    }
+
+	    // For each key of `next`, the list of keys to insert before that key in
+	    // the combined list
+	    var nextKeysPending = {};
+
+	    var pendingKeys = [];
+	    for (var prevKey in prev) {
+	      if (next.hasOwnProperty(prevKey)) {
+	        if (pendingKeys.length) {
+	          nextKeysPending[prevKey] = pendingKeys;
+	          pendingKeys = [];
+	        }
+	      } else {
+	        pendingKeys.push(prevKey);
+	      }
+	    }
+
+	    var i;
+	    var childMapping = {};
+	    for (var nextKey in next) {
+	      if (nextKeysPending.hasOwnProperty(nextKey)) {
+	        for (i = 0; i < nextKeysPending[nextKey].length; i++) {
+	          var pendingNextKey = nextKeysPending[nextKey][i];
+	          childMapping[nextKeysPending[nextKey][i]] = getValueForKey(pendingNextKey);
+	        }
+	      }
+	      childMapping[nextKey] = getValueForKey(nextKey);
+	    }
+
+	    // Finally, add the keys which didn't appear before any key in `next`
+	    for (i = 0; i < pendingKeys.length; i++) {
+	      childMapping[pendingKeys[i]] = getValueForKey(pendingKeys[i]);
+	    }
+
+	    return childMapping;
+	  }
+	};
+
+	module.exports = ReactTransitionChildMapping;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+
+/***/ },
+/* 268 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactCSSTransitionGroupChild
+	 */
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var ReactDOM = __webpack_require__(37);
+
+	var CSSCore = __webpack_require__(269);
+	var ReactTransitionEvents = __webpack_require__(270);
+
+	var onlyChild = __webpack_require__(35);
+
+	var TICK = 17;
+
+	var ReactCSSTransitionGroupChild = React.createClass({
+	  displayName: 'ReactCSSTransitionGroupChild',
+
+	  propTypes: {
+	    name: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.shape({
+	      enter: React.PropTypes.string,
+	      leave: React.PropTypes.string,
+	      active: React.PropTypes.string
+	    }), React.PropTypes.shape({
+	      enter: React.PropTypes.string,
+	      enterActive: React.PropTypes.string,
+	      leave: React.PropTypes.string,
+	      leaveActive: React.PropTypes.string,
+	      appear: React.PropTypes.string,
+	      appearActive: React.PropTypes.string
+	    })]).isRequired,
+
+	    // Once we require timeouts to be specified, we can remove the
+	    // boolean flags (appear etc.) and just accept a number
+	    // or a bool for the timeout flags (appearTimeout etc.)
+	    appear: React.PropTypes.bool,
+	    enter: React.PropTypes.bool,
+	    leave: React.PropTypes.bool,
+	    appearTimeout: React.PropTypes.number,
+	    enterTimeout: React.PropTypes.number,
+	    leaveTimeout: React.PropTypes.number
+	  },
+
+	  transition: function (animationType, finishCallback, userSpecifiedDelay) {
+	    var node = ReactDOM.findDOMNode(this);
+
+	    if (!node) {
+	      if (finishCallback) {
+	        finishCallback();
+	      }
+	      return;
+	    }
+
+	    var className = this.props.name[animationType] || this.props.name + '-' + animationType;
+	    var activeClassName = this.props.name[animationType + 'Active'] || className + '-active';
+	    var timeout = null;
+
+	    var endListener = function (e) {
+	      if (e && e.target !== node) {
+	        return;
+	      }
+
+	      clearTimeout(timeout);
+
+	      CSSCore.removeClass(node, className);
+	      CSSCore.removeClass(node, activeClassName);
+
+	      ReactTransitionEvents.removeEndEventListener(node, endListener);
+
+	      // Usually this optional callback is used for informing an owner of
+	      // a leave animation and telling it to remove the child.
+	      if (finishCallback) {
+	        finishCallback();
+	      }
+	    };
+
+	    CSSCore.addClass(node, className);
+
+	    // Need to do this to actually trigger a transition.
+	    this.queueClassAndNode(activeClassName, node);
+
+	    // If the user specified a timeout delay.
+	    if (userSpecifiedDelay) {
+	      // Clean-up the animation after the specified delay
+	      timeout = setTimeout(endListener, userSpecifiedDelay);
+	      this.transitionTimeouts.push(timeout);
+	    } else {
+	      // DEPRECATED: this listener will be removed in a future version of react
+	      ReactTransitionEvents.addEndEventListener(node, endListener);
+	    }
+	  },
+
+	  queueClassAndNode: function (className, node) {
+	    this.classNameAndNodeQueue.push({
+	      className: className,
+	      node: node
+	    });
+
+	    if (!this.timeout) {
+	      this.timeout = setTimeout(this.flushClassNameAndNodeQueue, TICK);
+	    }
+	  },
+
+	  flushClassNameAndNodeQueue: function () {
+	    if (this.isMounted()) {
+	      this.classNameAndNodeQueue.forEach(function (obj) {
+	        CSSCore.addClass(obj.node, obj.className);
+	      });
+	    }
+	    this.classNameAndNodeQueue.length = 0;
+	    this.timeout = null;
+	  },
+
+	  componentWillMount: function () {
+	    this.classNameAndNodeQueue = [];
+	    this.transitionTimeouts = [];
+	  },
+
+	  componentWillUnmount: function () {
+	    if (this.timeout) {
+	      clearTimeout(this.timeout);
+	    }
+	    this.transitionTimeouts.forEach(function (timeout) {
+	      clearTimeout(timeout);
+	    });
+
+	    this.classNameAndNodeQueue.length = 0;
+	  },
+
+	  componentWillAppear: function (done) {
+	    if (this.props.appear) {
+	      this.transition('appear', done, this.props.appearTimeout);
+	    } else {
+	      done();
+	    }
+	  },
+
+	  componentWillEnter: function (done) {
+	    if (this.props.enter) {
+	      this.transition('enter', done, this.props.enterTimeout);
+	    } else {
+	      done();
+	    }
+	  },
+
+	  componentWillLeave: function (done) {
+	    if (this.props.leave) {
+	      this.transition('leave', done, this.props.leaveTimeout);
+	    } else {
+	      done();
+	    }
+	  },
+
+	  render: function () {
+	    return onlyChild(this.props.children);
+	  }
+	});
+
+	module.exports = ReactCSSTransitionGroupChild;
+
+/***/ },
+/* 269 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+
+	/**
+	 * Copyright (c) 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @typechecks
+	 */
+
+	var invariant = __webpack_require__(9);
+
+	/**
+	 * The CSSCore module specifies the API (and implements most of the methods)
+	 * that should be used when dealing with the display of elements (via their
+	 * CSS classes and visibility on screen. It is an API focused on mutating the
+	 * display and not reading it as no logical state should be encoded in the
+	 * display of elements.
+	 */
+
+	/* Slow implementation for browsers that don't natively support .matches() */
+	function matchesSelector_SLOW(element, selector) {
+	  var root = element;
+	  while (root.parentNode) {
+	    root = root.parentNode;
+	  }
+
+	  var all = root.querySelectorAll(selector);
+	  return Array.prototype.indexOf.call(all, element) !== -1;
+	}
+
+	var CSSCore = {
+
+	  /**
+	   * Adds the class passed in to the element if it doesn't already have it.
+	   *
+	   * @param {DOMElement} element the element to set the class on
+	   * @param {string} className the CSS className
+	   * @return {DOMElement} the element passed in
+	   */
+	  addClass: function addClass(element, className) {
+	    !!/\s/.test(className) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'CSSCore.addClass takes only a single class name. "%s" contains ' + 'multiple classes.', className) : invariant(false) : void 0;
+
+	    if (className) {
+	      if (element.classList) {
+	        element.classList.add(className);
+	      } else if (!CSSCore.hasClass(element, className)) {
+	        element.className = element.className + ' ' + className;
+	      }
+	    }
+	    return element;
+	  },
+
+	  /**
+	   * Removes the class passed in from the element
+	   *
+	   * @param {DOMElement} element the element to set the class on
+	   * @param {string} className the CSS className
+	   * @return {DOMElement} the element passed in
+	   */
+	  removeClass: function removeClass(element, className) {
+	    !!/\s/.test(className) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'CSSCore.removeClass takes only a single class name. "%s" contains ' + 'multiple classes.', className) : invariant(false) : void 0;
+
+	    if (className) {
+	      if (element.classList) {
+	        element.classList.remove(className);
+	      } else if (CSSCore.hasClass(element, className)) {
+	        element.className = element.className.replace(new RegExp('(^|\\s)' + className + '(?:\\s|$)', 'g'), '$1').replace(/\s+/g, ' ') // multiple spaces to one
+	        .replace(/^\s*|\s*$/g, ''); // trim the ends
+	      }
+	    }
+	    return element;
+	  },
+
+	  /**
+	   * Helper to add or remove a class from an element based on a condition.
+	   *
+	   * @param {DOMElement} element the element to set the class on
+	   * @param {string} className the CSS className
+	   * @param {*} bool condition to whether to add or remove the class
+	   * @return {DOMElement} the element passed in
+	   */
+	  conditionClass: function conditionClass(element, className, bool) {
+	    return (bool ? CSSCore.addClass : CSSCore.removeClass)(element, className);
+	  },
+
+	  /**
+	   * Tests whether the element has the class specified.
+	   *
+	   * @param {DOMNode|DOMWindow} element the element to check the class on
+	   * @param {string} className the CSS className
+	   * @return {boolean} true if the element has the class, false if not
+	   */
+	  hasClass: function hasClass(element, className) {
+	    !!/\s/.test(className) ? process.env.NODE_ENV !== 'production' ? invariant(false, 'CSS.hasClass takes only a single class name.') : invariant(false) : void 0;
+	    if (element.classList) {
+	      return !!className && element.classList.contains(className);
+	    }
+	    return (' ' + element.className + ' ').indexOf(' ' + className + ' ') > -1;
+	  },
+
+	  /**
+	   * Tests whether the element matches the selector specified
+	   *
+	   * @param {DOMNode|DOMWindow} element the element that we are querying
+	   * @param {string} selector the CSS selector
+	   * @return {boolean} true if the element matches the selector, false if not
+	   */
+	  matchesSelector: function matchesSelector(element, selector) {
+	    var matchesImpl = element.matches || element.webkitMatchesSelector || element.mozMatchesSelector || element.msMatchesSelector || function (s) {
+	      return matchesSelector_SLOW(element, s);
+	    };
+	    return matchesImpl.call(element, selector);
+	  }
+
+	};
+
+	module.exports = CSSCore;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+
+/***/ },
+/* 270 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactTransitionEvents
+	 */
+
+	'use strict';
+
+	var ExecutionEnvironment = __webpack_require__(51);
+
+	var getVendorPrefixedEventName = __webpack_require__(115);
+
+	var endEvents = [];
+
+	function detectEvents() {
+	  var animEnd = getVendorPrefixedEventName('animationend');
+	  var transEnd = getVendorPrefixedEventName('transitionend');
+
+	  if (animEnd) {
+	    endEvents.push(animEnd);
+	  }
+
+	  if (transEnd) {
+	    endEvents.push(transEnd);
+	  }
+	}
+
+	if (ExecutionEnvironment.canUseDOM) {
+	  detectEvents();
+	}
+
+	// We use the raw {add|remove}EventListener() call because EventListener
+	// does not know how to remove event listeners and we really should
+	// clean up. Also, these events are not triggered in older browsers
+	// so we should be A-OK here.
+
+	function addEventListener(node, eventName, eventListener) {
+	  node.addEventListener(eventName, eventListener, false);
+	}
+
+	function removeEventListener(node, eventName, eventListener) {
+	  node.removeEventListener(eventName, eventListener, false);
+	}
+
+	var ReactTransitionEvents = {
+	  addEndEventListener: function (node, eventListener) {
+	    if (endEvents.length === 0) {
+	      // If CSS transitions are not supported, trigger an "end animation"
+	      // event immediately.
+	      window.setTimeout(eventListener, 0);
+	      return;
+	    }
+	    endEvents.forEach(function (endEvent) {
+	      addEventListener(node, endEvent, eventListener);
+	    });
+	  },
+
+	  removeEndEventListener: function (node, eventListener) {
+	    if (endEvents.length === 0) {
+	      return;
+	    }
+	    endEvents.forEach(function (endEvent) {
+	      removeEventListener(node, endEvent, eventListener);
+	    });
+	  }
+	};
+
+	module.exports = ReactTransitionEvents;
+
+/***/ },
+/* 271 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -28712,11 +29597,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _axios = __webpack_require__(265);
+	var _axios = __webpack_require__(272);
 
 	var _axios2 = _interopRequireDefault(_axios);
 
-	var _Video = __webpack_require__(287);
+	var _Video = __webpack_require__(294);
 
 	var _Video2 = _interopRequireDefault(_Video);
 
@@ -28769,12 +29654,13 @@
 			};
 		},
 		componentWillMount: function componentWillMount() {
+			this.props.getVideos();
 			var videos = this.props.videos;
-
-			this.setState({
-				videos: videos,
-				loading: false
-			});
+			// console.log(videos)
+			// this.setState({
+			// 	videos: videos,
+			// 	loading: false
+			// })
 		},
 		showDetails: function showDetails(id) {
 			this.props.show(id);
@@ -28794,6 +29680,12 @@
 				play: true,
 				url: video.url
 			});
+		},
+		handleSearch: function handleSearch(e) {
+			e.preventDefault();
+			var query = this.refs.search.value;
+			this.props.searchVideo(query);
+			this.refs.searchForm.reset();
 		},
 		render: function render() {
 			var _this = this;
@@ -28830,6 +29722,12 @@
 				),
 				play,
 				_react2.default.createElement(
+					'form',
+					{ ref: 'searchForm', onSubmit: this.handleSearch, className: 'comment-form' },
+					_react2.default.createElement('input', { type: 'search', ref: 'search', placeholder: 'search' }),
+					_react2.default.createElement('input', { type: 'submit', hidden: true })
+				),
+				_react2.default.createElement(
 					'div',
 					{ className: 'photo-grid' },
 					videos
@@ -28841,20 +29739,20 @@
 	module.exports = VideosContainer;
 
 /***/ },
-/* 265 */
+/* 272 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(266);
+	module.exports = __webpack_require__(273);
 
 /***/ },
-/* 266 */
+/* 273 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(267);
-	var bind = __webpack_require__(268);
-	var Axios = __webpack_require__(269);
+	var utils = __webpack_require__(274);
+	var bind = __webpack_require__(275);
+	var Axios = __webpack_require__(276);
 
 	/**
 	 * Create an instance of Axios
@@ -28890,16 +29788,16 @@
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(286);
+	axios.spread = __webpack_require__(293);
 
 
 /***/ },
-/* 267 */
+/* 274 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var bind = __webpack_require__(268);
+	var bind = __webpack_require__(275);
 
 	/*global toString:true*/
 
@@ -29199,7 +30097,7 @@
 
 
 /***/ },
-/* 268 */
+/* 275 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -29216,17 +30114,17 @@
 
 
 /***/ },
-/* 269 */
+/* 276 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var defaults = __webpack_require__(270);
-	var utils = __webpack_require__(267);
-	var InterceptorManager = __webpack_require__(272);
-	var dispatchRequest = __webpack_require__(273);
-	var isAbsoluteURL = __webpack_require__(284);
-	var combineURLs = __webpack_require__(285);
+	var defaults = __webpack_require__(277);
+	var utils = __webpack_require__(274);
+	var InterceptorManager = __webpack_require__(279);
+	var dispatchRequest = __webpack_require__(280);
+	var isAbsoluteURL = __webpack_require__(291);
+	var combineURLs = __webpack_require__(292);
 
 	/**
 	 * Create a new instance of Axios
@@ -29307,13 +30205,13 @@
 
 
 /***/ },
-/* 270 */
+/* 277 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(267);
-	var normalizeHeaderName = __webpack_require__(271);
+	var utils = __webpack_require__(274);
+	var normalizeHeaderName = __webpack_require__(278);
 
 	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 	var DEFAULT_CONTENT_TYPE = {
@@ -29385,12 +30283,12 @@
 
 
 /***/ },
-/* 271 */
+/* 278 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(267);
+	var utils = __webpack_require__(274);
 
 	module.exports = function normalizeHeaderName(headers, normalizedName) {
 	  utils.forEach(headers, function processHeader(value, name) {
@@ -29403,12 +30301,12 @@
 
 
 /***/ },
-/* 272 */
+/* 279 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(267);
+	var utils = __webpack_require__(274);
 
 	function InterceptorManager() {
 	  this.handlers = [];
@@ -29461,13 +30359,13 @@
 
 
 /***/ },
-/* 273 */
+/* 280 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
-	var utils = __webpack_require__(267);
-	var transformData = __webpack_require__(274);
+	var utils = __webpack_require__(274);
+	var transformData = __webpack_require__(281);
 
 	/**
 	 * Dispatch a request to the server using whichever adapter
@@ -29508,10 +30406,10 @@
 	    adapter = config.adapter;
 	  } else if (typeof XMLHttpRequest !== 'undefined') {
 	    // For browsers use XHR adapter
-	    adapter = __webpack_require__(275);
+	    adapter = __webpack_require__(282);
 	  } else if (typeof process !== 'undefined') {
 	    // For node use HTTP adapter
-	    adapter = __webpack_require__(275);
+	    adapter = __webpack_require__(282);
 	  }
 
 	  return Promise.resolve(config)
@@ -29543,12 +30441,12 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 274 */
+/* 281 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(267);
+	var utils = __webpack_require__(274);
 
 	/**
 	 * Transform the data for a request or a response
@@ -29569,18 +30467,18 @@
 
 
 /***/ },
-/* 275 */
+/* 282 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
-	var utils = __webpack_require__(267);
-	var settle = __webpack_require__(276);
-	var buildURL = __webpack_require__(279);
-	var parseHeaders = __webpack_require__(280);
-	var isURLSameOrigin = __webpack_require__(281);
-	var createError = __webpack_require__(277);
-	var btoa = (typeof window !== 'undefined' && window.btoa) || __webpack_require__(282);
+	var utils = __webpack_require__(274);
+	var settle = __webpack_require__(283);
+	var buildURL = __webpack_require__(286);
+	var parseHeaders = __webpack_require__(287);
+	var isURLSameOrigin = __webpack_require__(288);
+	var createError = __webpack_require__(284);
+	var btoa = (typeof window !== 'undefined' && window.btoa) || __webpack_require__(289);
 
 	module.exports = function xhrAdapter(config) {
 	  return new Promise(function dispatchXhrRequest(resolve, reject) {
@@ -29674,7 +30572,7 @@
 	    // This is only done if running in a standard browser environment.
 	    // Specifically not if we're in a web worker, or react-native.
 	    if (utils.isStandardBrowserEnv()) {
-	      var cookies = __webpack_require__(283);
+	      var cookies = __webpack_require__(290);
 
 	      // Add xsrf header
 	      var xsrfValue = config.withCredentials || isURLSameOrigin(config.url) ?
@@ -29736,12 +30634,12 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 276 */
+/* 283 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var createError = __webpack_require__(277);
+	var createError = __webpack_require__(284);
 
 	/**
 	 * Resolve or reject a Promise based on response status.
@@ -29767,12 +30665,12 @@
 
 
 /***/ },
-/* 277 */
+/* 284 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var enhanceError = __webpack_require__(278);
+	var enhanceError = __webpack_require__(285);
 
 	/**
 	 * Create an Error with the specified message, config, error code, and response.
@@ -29790,7 +30688,7 @@
 
 
 /***/ },
-/* 278 */
+/* 285 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -29815,12 +30713,12 @@
 
 
 /***/ },
-/* 279 */
+/* 286 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(267);
+	var utils = __webpack_require__(274);
 
 	function encode(val) {
 	  return encodeURIComponent(val).
@@ -29889,12 +30787,12 @@
 
 
 /***/ },
-/* 280 */
+/* 287 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(267);
+	var utils = __webpack_require__(274);
 
 	/**
 	 * Parse headers into an object
@@ -29932,12 +30830,12 @@
 
 
 /***/ },
-/* 281 */
+/* 288 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(267);
+	var utils = __webpack_require__(274);
 
 	module.exports = (
 	  utils.isStandardBrowserEnv() ?
@@ -30006,7 +30904,7 @@
 
 
 /***/ },
-/* 282 */
+/* 289 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -30048,12 +30946,12 @@
 
 
 /***/ },
-/* 283 */
+/* 290 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(267);
+	var utils = __webpack_require__(274);
 
 	module.exports = (
 	  utils.isStandardBrowserEnv() ?
@@ -30107,7 +31005,7 @@
 
 
 /***/ },
-/* 284 */
+/* 291 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -30127,7 +31025,7 @@
 
 
 /***/ },
-/* 285 */
+/* 292 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -30145,7 +31043,7 @@
 
 
 /***/ },
-/* 286 */
+/* 293 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -30178,12 +31076,14 @@
 
 
 /***/ },
-/* 287 */
+/* 294 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(2);
+
+	// <img src={this.thumbnail(video.url.slice(-11))} alt={video.title} className="grid-photo" />
 
 	var style = {
 
@@ -30261,12 +31161,8 @@
 			) : null;
 			return React.createElement(
 				"figure",
-				{ className: "grid-figure", onClick: this.props.handlePlay.bind(null, video) },
-				React.createElement(
-					"div",
-					{ className: "grid-photo-wrap", style: style.main },
-					React.createElement("img", { src: this.thumbnail(video.url.slice(-11)), alt: video.title, className: "grid-photo" })
-				),
+				{ className: "grid-figure" },
+				React.createElement("div", { className: "grid-photo-wrap", onClick: this.props.handlePlay.bind(null, video), style: style.main }),
 				React.createElement(
 					"figcaption",
 					null,
@@ -30289,7 +31185,7 @@
 	module.exports = Video;
 
 /***/ },
-/* 288 */
+/* 295 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -30301,34 +31197,44 @@
 
 	var _redux = __webpack_require__(241);
 
-	var _fetcher = __webpack_require__(289);
+	var _redux2 = _interopRequireDefault(_redux);
+
+	var _reduxThunk = __webpack_require__(309);
+
+	var _reduxThunk2 = _interopRequireDefault(_reduxThunk);
+
+	var _fetcher = __webpack_require__(296);
 
 	var _fetcher2 = _interopRequireDefault(_fetcher);
 
-	var _main = __webpack_require__(290);
+	var _main = __webpack_require__(297);
 
 	var _main2 = _interopRequireDefault(_main);
 
-	var _reactRouterRedux = __webpack_require__(291);
+	var _reactRouterRedux = __webpack_require__(298);
 
 	var _reactRouter = __webpack_require__(177);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var defaultState = {
-		videos: _fetcher2.default
+		videos: {}
 	};
 
-	var store = (0, _redux.createStore)(_main2.default, defaultState);
+	var store = (0, _redux.createStore)(_main2.default, defaultState, (0, _redux.applyMiddleware)(_reduxThunk2.default));
+	// console.log(store.getState())
+	// console.log(store.dispatch({
+	// 	type: 'GET_VIDEOS_DONE',
+	// 	data: [1,2,3,4,5,4,3,5]
+	// }))
+	// console.log(store.getState())
 
 	var history = exports.history = (0, _reactRouterRedux.syncHistoryWithStore)(_reactRouter.browserHistory, store);
-
-	// console.log(store)
 
 	exports.default = store;
 
 /***/ },
-/* 289 */
+/* 296 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -30337,7 +31243,7 @@
 		value: true
 	});
 
-	var _axios = __webpack_require__(265);
+	var _axios = __webpack_require__(272);
 
 	var _axios2 = _interopRequireDefault(_axios);
 
@@ -30346,6 +31252,7 @@
 	var request = new XMLHttpRequest();
 
 	function getVideos() {
+		return '[1,2,3,4,5]';
 		var endpoint = 'http://localhost:8888/api/v1/videos';
 		request.open('GET', endpoint, false);
 		request.send();
@@ -30356,7 +31263,7 @@
 	exports.default = videos;
 
 /***/ },
-/* 290 */
+/* 297 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -30367,19 +31274,46 @@
 
 	var _redux = __webpack_require__(241);
 
-	var _reactRouterRedux = __webpack_require__(291);
+	var _reactRouterRedux = __webpack_require__(298);
 
 	function videos() {
 		var state = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
 		var action = arguments[1];
 
 		switch (action.type) {
-			case 'INCREMENT_LIKES':
-				return state;
+			case 'GET_VIDEOS_PENDING':
+				// console.log(state)
+				// console.log({
+				// 	fetchingVideos: true,
+				// 	fetchingSuccess: null,
+				// 	videos: state
+				// })
+				return {
+					fetchingVideos: true,
+					fetchingSuccess: null,
+					videos: state
+				};
+			case 'GET_VIDEOS_DONE':
+				console.log(state);
+				// console.log({
+				// 	fetchingVideos: false,
+				// 	fetchingSuccess: true,
+				// 	videos: action.data
+				// })
+				return {
+					fetchingVideos: false,
+					fetchingSuccess: true,
+					videos: action.data
+				};
+			case 'GET_VIDEOS_FAILED':
+				return {
+					fetchingVideos: false,
+					fetchingSuccess: false,
+					videos: state
+				};
 			default:
 				return state;
 		}
-		return state;
 	}
 
 	function like() {
@@ -30395,6 +31329,18 @@
 		return state;
 	}
 
+	function search() {
+		var state = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+		var action = arguments[1];
+
+		switch (action.type) {
+			case 'SEARCH_VIDEOS':
+				return state;
+			default:
+				return state;
+		}
+	}
+
 	function show() {
 		var state = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
 		var action = arguments[1];
@@ -30408,12 +31354,12 @@
 		return state;
 	}
 
-	var mainReducer = (0, _redux.combineReducers)({ videos: videos, like: like, routing: _reactRouterRedux.routerReducer });
+	var mainReducer = (0, _redux.combineReducers)({ videos: videos, like: like, search: search, routing: _reactRouterRedux.routerReducer });
 
 	exports.default = mainReducer;
 
 /***/ },
-/* 291 */
+/* 298 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -30423,7 +31369,7 @@
 	});
 	exports.routerMiddleware = exports.routerActions = exports.goForward = exports.goBack = exports.go = exports.replace = exports.push = exports.CALL_HISTORY_METHOD = exports.routerReducer = exports.LOCATION_CHANGE = exports.syncHistoryWithStore = undefined;
 
-	var _reducer = __webpack_require__(292);
+	var _reducer = __webpack_require__(299);
 
 	Object.defineProperty(exports, 'LOCATION_CHANGE', {
 	  enumerable: true,
@@ -30438,7 +31384,7 @@
 	  }
 	});
 
-	var _actions = __webpack_require__(293);
+	var _actions = __webpack_require__(300);
 
 	Object.defineProperty(exports, 'CALL_HISTORY_METHOD', {
 	  enumerable: true,
@@ -30483,11 +31429,11 @@
 	  }
 	});
 
-	var _sync = __webpack_require__(294);
+	var _sync = __webpack_require__(301);
 
 	var _sync2 = _interopRequireDefault(_sync);
 
-	var _middleware = __webpack_require__(295);
+	var _middleware = __webpack_require__(302);
 
 	var _middleware2 = _interopRequireDefault(_middleware);
 
@@ -30497,7 +31443,7 @@
 	exports.routerMiddleware = _middleware2['default'];
 
 /***/ },
-/* 292 */
+/* 299 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -30541,7 +31487,7 @@
 	}
 
 /***/ },
-/* 293 */
+/* 300 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -30583,7 +31529,7 @@
 	var routerActions = exports.routerActions = { push: push, replace: replace, go: go, goBack: goBack, goForward: goForward };
 
 /***/ },
-/* 294 */
+/* 301 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -30596,7 +31542,7 @@
 
 	exports['default'] = syncHistoryWithStore;
 
-	var _reducer = __webpack_require__(292);
+	var _reducer = __webpack_require__(299);
 
 	var defaultSelectLocationState = function defaultSelectLocationState(state) {
 	  return state.routing;
@@ -30737,7 +31683,7 @@
 	}
 
 /***/ },
-/* 295 */
+/* 302 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -30747,7 +31693,7 @@
 	});
 	exports['default'] = routerMiddleware;
 
-	var _actions = __webpack_require__(293);
+	var _actions = __webpack_require__(300);
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -30775,16 +31721,16 @@
 	}
 
 /***/ },
-/* 296 */
+/* 303 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(297);
+	var content = __webpack_require__(304);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(299)(content, {});
+	var update = __webpack_require__(306)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -30801,21 +31747,21 @@
 	}
 
 /***/ },
-/* 297 */
+/* 304 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(298)();
+	exports = module.exports = __webpack_require__(305)();
 	// imports
 
 
 	// module
-	exports.push([module.id, "article,\naside,\ndetails,\nfigcaption,\nfigure,\nfooter,\nheader,\nhgroup,\nnav,\nsection,\nsummary {\n  display: block;\n}\naudio,\ncanvas,\nvideo {\n  display: inline-block;\n}\naudio:not([controls]) {\n  display: none;\n  height: 0;\n}\n[hidden] {\n  display: none;\n}\nhtml {\n  font-family: sans-serif;\n  -webkit-text-size-adjust: 100%;\n  -ms-text-size-adjust: 100%;\n}\na:focus {\n  outline: thin dotted;\n}\na:active,\na:hover {\n  outline: 0;\n}\nh1 {\n  font-size: 2em;\n}\nabbr[title] {\n  border-bottom: 1px dotted;\n}\nb,\nstrong {\n  font-weight: 700;\n}\ndfn {\n  font-style: italic;\n}\nmark {\n  background: #ff0;\n  color: #000;\n}\ncode,\nkbd,\npre,\nsamp {\n  font-family: monospace, serif;\n  font-size: 1em;\n}\npre {\n  white-space: pre-wrap;\n  word-wrap: break-word;\n}\nq {\n  quotes: 2 1C 2 1D 2 18 2 19;\n}\nsmall {\n  font-size: 80%;\n}\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\nsup {\n  top: -0.5em;\n}\nsub {\n  bottom: -0.25em;\n}\nimg {\n  border: 0;\n}\nsvg:not(:root) {\n  overflow: hidden;\n}\nfieldset {\n  border: 1px solid #c0c0c0;\n  margin: 0 2px;\n  padding: 0.35em 0.625em 0.75em;\n}\nbutton,\ninput,\nselect,\ntextarea {\n  font-family: inherit;\n  font-size: 100%;\n  margin: 0;\n}\nbutton,\ninput {\n  line-height: normal;\n}\nbutton,\nhtml input[type=button],\ninput[type=reset],\ninput[type=submit] {\n  -webkit-appearance: button;\n  cursor: pointer;\n}\nbutton[disabled],\ninput[disabled] {\n  cursor: default;\n}\ninput[type=checkbox],\ninput[type=radio] {\n  box-sizing: border-box;\n  padding: 0;\n}\ninput[type=search] {\n  -webkit-appearance: textfield;\n  -moz-box-sizing: content-box;\n  -webkit-box-sizing: content-box;\n  box-sizing: content-box;\n}\ninput[type=search]::-webkit-search-cancel-button,\ninput[type=search]::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\ntextarea {\n  overflow: auto;\n  vertical-align: top;\n}\ntable {\n  border-collapse: collapse;\n  border-spacing: 0;\n}\nbody,\nfigure {\n  margin: 0;\n}\nlegend,\nbutton::-moz-focus-inner,\ninput::-moz-focus-inner {\n  border: 0;\n  padding: 0;\n}\n.clearfix:after {\n  visibility: hidden;\n  display: block;\n  font-size: 0;\n  content: \" \";\n  clear: both;\n  height: 0;\n}\n* {\n  -moz-box-sizing: border-box;\n  -webkit-box-sizing: border-box;\n  box-sizing: border-box;\n}\nimg {\n  max-width: 100%;\n}\nhtml {\n  font-size: 10px;\n  font-family: sans-serif;\n}\np {\n  font-size: 1.6rem;\n  line-height: 1.5;\n}\nh1 {\n  font-family: billabong, 'billabongregular';\n  text-align: center;\n  font-weight: 100;\n  font-size: 13rem;\n  margin: 2rem 0;\n  letter-spacing: -1px;\n  text-shadow: 0px 4px 0 rgba(18,86,136,0.11);\n}\nh1 a {\n  color: #125688;\n  text-decoration: none;\n}\nh1 a:focus {\n  outline: 0;\n}\n@font-face {\n  font-family: 'billabongregular';\n  src: url(\"https://cdn.rawgit.com/milktronics/beaglegr.am/master/public/fonts/billabong-webfont.eot\");\n  src: url(\"https://cdn.rawgit.com/milktronics/beaglegr.am/master/public/fonts/billabong-webfont.eot?#iefix\") format('embedded-opentype'), url(\"https://cdn.rawgit.com/milktronics/beaglegr.am/master/public/fonts/billabong-webfont.woff\") format('woff'), url(\"https://cdn.rawgit.com/milktronics/beaglegr.am/master/public/fonts/billabong-webfont.ttf\") format('truetype'), url(\"https://cdn.rawgit.com/milktronics/beaglegr.am/master/public/fonts/billabong-webfont.svg#billabongregular\") format('svg');\n  font-weight: normal;\n  font-style: normal;\n}\n.likes-heart {\n  opacity: 0;\n  transition: all 0.5s;\n  transform: translateX(-50%) translateY(-50%) scale(5);\n  display: block;\n}\n.likes-heart.like-enter {\n  transition: all 0.2s;\n  transform: translateX(-50%) translateY(-50%) scale(1);\n  opacity: 1;\n}\n.likes-heart.like-enter.like-enter-active {\n  transform: translateX(-50%) translateY(-50%) scale(5);\n}\n.likes-heart .like-leave-active {\n  display: none;\n}\nbody {\n  background: #fafafa;\n}\n.photo-grid {\n  display: flex;\n  flex-wrap: wrap;\n  max-width: 1200px;\n  margin: 0 auto;\n}\n.grid-figure,\n.single-photo {\n  flex-basis: calc(33.333% - 4rem);\n  flex-grow: 1;\n  flex-shrink: 0;\n  margin: 0 2rem 2rem 2rem;\n  padding: 2rem;\n  border: 1px solid #edeeed;\n  background: #fff;\n  box-shadow: 0 0 0 5px rgba(0,0,0,0.03);\n  position: relative;\n}\n.single-photo {\n  max-width: 900px;\n  margin: 0 auto;\n  display: flex;\n  background: #fff;\n}\n.single-photo .grid-figure {\n  box-shadow: none;\n  margin: 0 2rem 0 0;\n  border: 0;\n  padding: 0;\n  flex: 1 0 60%;\n  max-width: 60%;\n}\n.single-photo .comments {\n  flex: 1 0 40%;\n  max-width: 40%;\n}\n.single-photo .grid-photo {\n  width: 100%;\n  margin: 0;\n}\n.grid-photo {\n  width: calc(100% + 4rem);\n  margin-left: -2rem;\n  margin-top: -2rem;\n  max-width: none;\n}\n.remove-comment {\n  background: none;\n  border: 0;\n  line-height: 1;\n  opacity: 0;\n}\n.remove-comment:hover {\n  color: #f00;\n}\n.comment {\n  border-bottom: 1px solid #edeeed;\n  padding: 0.5rem 0;\n}\n.comment p {\n  font-size: 1.2rem;\n  margin: 0;\n}\n.comment strong {\n  color: #125688;\n  margin-right: 5px;\n}\n.comment:hover .remove-comment {\n  opacity: 1;\n}\n.comment-form input,\n.comment-form textarea {\n  width: 100%;\n  border: 0;\n  font-size: 1.3rem;\n  padding: 1rem 0;\n  border-bottom: 1px solid #edeeed;\n  outline: none;\n  resize: vertical;\n}\n.grid-photo-wrap {\n  position: relative;\n}\n.likes-heart {\n  background: url(\"http://f.cl.ly/items/3Y373q2Q3J3Y1j203n0m/Bitmap-3.png\") center no-repeat;\n  background-size: contain;\n  font-size: 2rem;\n  padding: 1rem;\n  position: absolute;\n  color: #125688;\n  left: 50%;\n  top: 50%;\n  pointer-events: none;\n}\n/*  \n  Buttons  \n*/\n.control-buttons {\n  display: flex;\n  justify-content: space-between;\n}\nbutton,\n.button {\n  border: 2px solid #f2f2f2;\n  background: none;\n  flex-basis: 48%;\n  display: inline-block;\n  line-height: 2;\n  text-decoration: none;\n  padding: 5px;\n  text-align: center;\n  font-size: 15px;\n  color: #125688;\n  transition: all 0.2s;\n  box-sizing: padding-box;\n}\nbutton:hover,\n.button:hover,\nbutton:focus,\n.button:focus {\n  border-color: #125688;\n  outline: 0;\n}\n/*\n  Cowboy style speech bubble - you should probably use an SVG for this if you are doing more icons.\n*/\n.speech-bubble {\n  width: 1.5rem;\n  height: 1.25rem;\n  background: #125688;\n  display: inline-block;\n  border-radius: 50%;\n  position: relative;\n}\n.speech-bubble:after {\n  display: inline-block;\n  position: absolute;\n  content: '';\n  width: 0;\n  height: 0;\n  border-style: solid;\n  border-width: 0 1.25rem 1.25rem 0;\n  border-color: transparent #125688 transparent transparent;\n  top: 30%;\n  left: 0;\n}\n", ""]);
+	exports.push([module.id, "article,\naside,\ndetails,\nfigcaption,\nfigure,\nfooter,\nheader,\nhgroup,\nnav,\nsection,\nsummary {\n  display: block;\n}\naudio,\ncanvas,\nvideo {\n  display: inline-block;\n}\naudio:not([controls]) {\n  display: none;\n  height: 0;\n}\n[hidden] {\n  display: none;\n}\nhtml {\n  font-family: sans-serif;\n  -webkit-text-size-adjust: 100%;\n  -ms-text-size-adjust: 100%;\n}\na:focus {\n  outline: thin dotted;\n}\na:active,\na:hover {\n  outline: 0;\n}\nh1 {\n  font-size: 2em;\n}\nabbr[title] {\n  border-bottom: 1px dotted;\n}\nb,\nstrong {\n  font-weight: 700;\n}\ndfn {\n  font-style: italic;\n}\nmark {\n  background: #ff0;\n  color: #000;\n}\ncode,\nkbd,\npre,\nsamp {\n  font-family: monospace, serif;\n  font-size: 1em;\n}\npre {\n  white-space: pre-wrap;\n  word-wrap: break-word;\n}\nq {\n  quotes: 2 1C 2 1D 2 18 2 19;\n}\nsmall {\n  font-size: 80%;\n}\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\nsup {\n  top: -0.5em;\n}\nsub {\n  bottom: -0.25em;\n}\nimg {\n  border: 0;\n}\nsvg:not(:root) {\n  overflow: hidden;\n}\nfieldset {\n  border: 1px solid #c0c0c0;\n  margin: 0 2px;\n  padding: 0.35em 0.625em 0.75em;\n}\nbutton,\ninput,\nselect,\ntextarea {\n  font-family: inherit;\n  font-size: 100%;\n  margin: 0;\n}\nbutton,\ninput {\n  line-height: normal;\n}\nbutton,\nhtml input[type=button],\ninput[type=reset],\ninput[type=submit] {\n  -webkit-appearance: button;\n  cursor: pointer;\n}\nbutton[disabled],\ninput[disabled] {\n  cursor: default;\n}\ninput[type=checkbox],\ninput[type=radio] {\n  box-sizing: border-box;\n  padding: 0;\n}\ninput[type=search] {\n  -webkit-appearance: textfield;\n  -moz-box-sizing: content-box;\n  -webkit-box-sizing: content-box;\n  box-sizing: content-box;\n}\ninput[type=search]::-webkit-search-cancel-button,\ninput[type=search]::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\ntextarea {\n  overflow: auto;\n  vertical-align: top;\n}\ntable {\n  border-collapse: collapse;\n  border-spacing: 0;\n}\nbody,\nfigure {\n  margin: 0;\n}\nlegend,\nbutton::-moz-focus-inner,\ninput::-moz-focus-inner {\n  border: 0;\n  padding: 0;\n}\n.clearfix:after {\n  visibility: hidden;\n  display: block;\n  font-size: 0;\n  content: \" \";\n  clear: both;\n  height: 0;\n}\n* {\n  -moz-box-sizing: border-box;\n  -webkit-box-sizing: border-box;\n  box-sizing: border-box;\n}\nimg {\n  max-width: 100%;\n}\nhtml {\n  font-size: 10px;\n  font-family: sans-serif;\n}\np {\n  font-size: 1.6rem;\n  line-height: 1.5;\n}\nh1 {\n  font-family: billabong, 'billabongregular';\n  text-align: center;\n  font-weight: 100;\n  font-size: 13rem;\n  margin: 2rem 0;\n  letter-spacing: -1px;\n  text-shadow: 0px 4px 0 rgba(18,86,136,0.11);\n}\nh1 a {\n  color: #125688;\n  text-decoration: none;\n}\nh1 a:focus {\n  outline: 0;\n}\n@font-face {\n  font-family: 'billabongregular';\n/*src: url('https://cdn.rawgit.com/milktronics/beaglegr.am/master/public/fonts/billabong-webfont.eot');\n    src: url('https://cdn.rawgit.com/milktronics/beaglegr.am/master/public/fonts/billabong-webfont.eot?#iefix') format('embedded-opentype'),\rurl('https://cdn.rawgit.com/milktronics/beaglegr.am/master/public/fonts/billabong-webfont.woff') format('woff'),\rurl('https://cdn.rawgit.com/milktronics/beaglegr.am/master/public/fonts/billabong-webfont.ttf') format('truetype'),\rurl('https://cdn.rawgit.com/milktronics/beaglegr.am/master/public/fonts/billabong-webfont.svg#billabongregular') format('svg');*/\n  font-weight: normal;\n  font-style: normal;\n}\n.likes-heart {\n  opacity: 0;\n  transition: all 0.5s;\n  transform: translateX(-50%) translateY(-50%) scale(5);\n  display: block;\n}\n.likes-heart.like-enter {\n  transition: all 0.2s;\n  transform: translateX(-50%) translateY(-50%) scale(1);\n  opacity: 1;\n}\n.likes-heart.like-enter.like-enter-active {\n  transform: translateX(-50%) translateY(-50%) scale(5);\n}\n.likes-heart .like-leave-active {\n  display: none;\n}\nbody {\n  background: #fafafa;\n}\n.photo-grid {\n  display: flex;\n  flex-wrap: wrap;\n  max-width: 1200px;\n  margin: 0 auto;\n}\n.grid-figure,\n.single-photo {\n  flex-basis: calc(33.333% - 4rem);\n  flex-grow: 1;\n  flex-shrink: 0;\n  margin: 0 2rem 2rem 2rem;\n  padding: 2rem;\n  border: 1px solid #edeeed;\n  background: #fff;\n  box-shadow: 0 0 0 5px rgba(0,0,0,0.03);\n  position: relative;\n}\n.single-photo {\n  max-width: 900px;\n  margin: 0 auto;\n  display: flex;\n  background: #fff;\n}\n.single-photo .grid-figure {\n  box-shadow: none;\n  margin: 0 2rem 0 0;\n  border: 0;\n  padding: 0;\n  flex: 1 0 60%;\n  max-width: 60%;\n}\n.single-photo .comments {\n  flex: 1 0 40%;\n  max-width: 40%;\n}\n.single-photo .grid-photo {\n  width: 100%;\n  margin: 0;\n}\n.grid-photo {\n  width: calc(100% + 4rem);\n  margin-left: -2rem;\n  margin-top: -2rem;\n  max-width: none;\n}\n.remove-comment {\n  background: none;\n  border: 0;\n  line-height: 1;\n  opacity: 0;\n}\n.remove-comment:hover {\n  color: #f00;\n}\n.comment {\n  border-bottom: 1px solid #edeeed;\n  padding: 0.5rem 0;\n}\n.comment p {\n  font-size: 1.2rem;\n  margin: 0;\n}\n.comment strong {\n  color: #125688;\n  margin-right: 5px;\n}\n.comment:hover .remove-comment {\n  opacity: 1;\n}\n.comment-form input,\n.comment-form textarea {\n  width: 100%;\n  border: 0;\n  font-size: 1.3rem;\n  padding: 1rem 0;\n  border-bottom: 1px solid #edeeed;\n  outline: none;\n  resize: vertical;\n}\n.grid-photo-wrap {\n  position: relative;\n}\n.likes-heart {\n  background: url(\"http://f.cl.ly/items/3Y373q2Q3J3Y1j203n0m/Bitmap-3.png\") center no-repeat;\n  background-size: contain;\n  font-size: 2rem;\n  padding: 1rem;\n  position: absolute;\n  color: #125688;\n  left: 50%;\n  top: 50%;\n  pointer-events: none;\n}\n/*  \n  Buttons  \n*/\n.control-buttons {\n  display: flex;\n  justify-content: space-between;\n}\nbutton,\n.button {\n  border: 2px solid #f2f2f2;\n  background: none;\n  flex-basis: 48%;\n  display: inline-block;\n  line-height: 2;\n  text-decoration: none;\n  padding: 5px;\n  text-align: center;\n  font-size: 15px;\n  color: #125688;\n  transition: all 0.2s;\n  box-sizing: padding-box;\n}\nbutton:hover,\n.button:hover,\nbutton:focus,\n.button:focus {\n  border-color: #125688;\n  outline: 0;\n}\n/*\n  Cowboy style speech bubble - you should probably use an SVG for this if you are doing more icons.\n*/\n.speech-bubble {\n  width: 1.5rem;\n  height: 1.25rem;\n  background: #125688;\n  display: inline-block;\n  border-radius: 50%;\n  position: relative;\n}\n.speech-bubble:after {\n  display: inline-block;\n  position: absolute;\n  content: '';\n  width: 0;\n  height: 0;\n  border-style: solid;\n  border-width: 0 1.25rem 1.25rem 0;\n  border-color: transparent #125688 transparent transparent;\n  top: 30%;\n  left: 0;\n}\n", ""]);
 
 	// exports
 
 
 /***/ },
-/* 298 */
+/* 305 */
 /***/ function(module, exports) {
 
 	/*
@@ -30871,7 +31817,7 @@
 
 
 /***/ },
-/* 299 */
+/* 306 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -31121,6 +32067,36 @@
 			URL.revokeObjectURL(oldSrc);
 	}
 
+
+/***/ },
+/* 307 */,
+/* 308 */,
+/* 309 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	exports.__esModule = true;
+	function createThunkMiddleware(extraArgument) {
+	  return function (_ref) {
+	    var dispatch = _ref.dispatch;
+	    var getState = _ref.getState;
+	    return function (next) {
+	      return function (action) {
+	        if (typeof action === 'function') {
+	          return action(dispatch, getState, extraArgument);
+	        }
+
+	        return next(action);
+	      };
+	    };
+	  };
+	}
+
+	var thunk = createThunkMiddleware();
+	thunk.withExtraArgument = createThunkMiddleware;
+
+	exports['default'] = thunk;
 
 /***/ }
 /******/ ]);

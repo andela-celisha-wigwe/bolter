@@ -26,10 +26,12 @@
     "express-sslify": "^1.1.0",
     "jquery": "^3.1.0",
     "react": "^15.3.0",
+    "react-addons-css-transition-group": "^15.3.0",
     "react-dom": "^15.3.0",
     "react-redux": "^4.4.5",
     "react-router": "^2.6.1",
     "redux": "^3.5.2",
+    "redux-thunk": "^2.1.0",
     "stylus": "^0.54.5",
     "stylus-loader": "^2.1.2"
   },
