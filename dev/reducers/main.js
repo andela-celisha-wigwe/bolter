@@ -4,35 +4,34 @@ import { routerReducer } from 'react-router-redux';
 function videos(state = [], action) {
 	switch (action.type) {
 		case 'GET_VIDEOS_PENDING' :
-			// console.log(state)
-			// console.log({
-			// 	fetchingVideos: true,
-			// 	fetchingSuccess: null,
-			// 	videos: state
-			// })
 			return {
-				fetchingVideos: true,
-				fetchingSuccess: null,
-				videos: state
+				loading: true,
+				status: "pending",
+				data: []
 			}
 		case 'GET_VIDEOS_DONE' :
-			console.log(state)
-			// console.log({
-			// 	fetchingVideos: false,
-			// 	fetchingSuccess: true,
-			// 	videos: action.data
-			// })
 			return {
-				fetchingVideos: false,
-				fetchingSuccess: true,
-				videos: action.data
+				loading: false,
+				status: 'found',
+				data: action.data
+			}
+		case 'SEARCHING' :
+			return {
+				loading: true,
+				status: "searching",
+				data: []
+			}
+		case 'SEARCH_VIDEOS_DONE' : 
+			return {
+				loading: false,
+				status: 'found',
+				data: action.data
 			}
 		case 'GET_VIDEOS_FAILED' :
-			return {
-				fetchingVideos: false,
-				fetchingSuccess: false,
-				videos: state
-			}
+			return [
+				...state,
+				{videos: state}
+			]
 		default :
 			return state
 	}
@@ -48,15 +47,6 @@ function like(state =[], action) {
 	return state;
 }
 
-function search(state = [], action) {
-	switch (action.type) {
-		case 'SEARCH_VIDEOS' :
-			return state;
-		default :
-			return state;
-	}
-}
-
 function show(state =[], action) {
 	switch (action.type) {
 		case 'SHOW_DETAILS' :
@@ -68,6 +58,6 @@ function show(state =[], action) {
 	return state;
 }
 
-const mainReducer = combineReducers({videos, like, search, routing: routerReducer  })
+const mainReducer = combineReducers({videos, like, routing: routerReducer  })
 
 export default mainReducer

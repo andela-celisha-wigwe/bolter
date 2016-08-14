@@ -16,3 +16,4 @@ $app->get('/', function () use ($app) {
 });
 
 $app->get('/api/v1/videos', 'VideosController@index');
+$app->get('/api/v1/search/videos/{title}', 'VideosController@search');

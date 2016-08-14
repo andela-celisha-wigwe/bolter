@@ -13,10 +13,17 @@ class VideosController extends Controller
 	{
 		header('Access-Control-Allow-Origin: *');
 	}
+
     public function index(Request $request)
     {
         $videos = V::all();
 
         return $videos;
+    }
+
+    public function search(Request $request, $title)
+    {
+    	$condition = env('DB_CONNECTION') == 'pgsql' ? 'ILIKE' : 'LIKE';
+    	return V::where('title', $condition, "%$title%")->get();
     }
 }
